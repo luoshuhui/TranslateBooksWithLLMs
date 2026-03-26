@@ -26,7 +26,9 @@ const PROVIDER_LOGOS = {
     mistral: '/static/img/providers/mistral.png',
     gemini: '/static/img/providers/gemini.png',
     openai: '/static/img/providers/openai.png',
-    openrouter: '/static/img/providers/openrouter.png'
+    openrouter: '/static/img/providers/openrouter.png',
+    siliconflow: '/static/img/providers/siliconflow.png',
+    baishan: '/static/img/providers/baishan.png'
 };
 
 /**
@@ -39,7 +41,9 @@ const PROVIDER_META = {
     mistral: { name: 'Mistral', description: 'Cloud API' },
     gemini: { name: 'Gemini', description: 'Cloud' },
     openai: { name: 'OpenAI', description: 'Compatible' },
-    openrouter: { name: 'OpenRouter', description: '200+ models' }
+    openrouter: { name: 'OpenRouter', description: '200+ models' },
+    siliconflow: { name: 'SiliconFlow', description: 'Cloud API' },
+    baishan: { name: 'Baishan', description: 'Cloud API' }
 };
 
 /**
@@ -59,6 +63,20 @@ const OPENAI_MODELS = [
 const DEEPSEEK_FALLBACK_MODELS = [
     { value: 'deepseek-chat', label: 'DeepSeek Chat (V3)' },
     { value: 'deepseek-reasoner', label: 'DeepSeek Reasoner (Thinking)' }
+];
+
+/**
+ * Fallback SiliconFlow models list
+ */
+const SILICONFLOW_FALLBACK_MODELS = [
+    { value: 'tencent/Hunyuan-MT-7B', label: 'Hunyuan MT 7B' }
+];
+
+/**
+ * Fallback Baishan models list
+ */
+const BAISHAN_FALLBACK_MODELS = [
+    { value: 'DeepSeek-R1-0528-Qwen3-8B', label: 'DeepSeek-R1-Qwen3-8B' }
 ];
 
 /**
@@ -311,6 +329,27 @@ function populateModelSelect(models, defaultModel = null, provider = 'ollama') {
             }
             modelSelect.appendChild(option);
         });
+    } else if (provider === 'siliconflow' || provider === 'baishan') {
+        models.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.value;
+            option.textContent = model.label;
+            if (model.value === defaultModel) {
+                option.selected = true;
+                defaultModelFound = true;
+            }
+            modelSelect.appendChild(option);
+        });
+
+        // Add default model manually if not found in list (e.g. from .env)
+        if (defaultModel && !defaultModelFound) {
+            const option = document.createElement('option');
+            option.value = defaultModel;
+            option.textContent = defaultModel + ' (from .env)';
+            option.selected = true;
+            modelSelect.appendChild(option);
+            defaultModelFound = true; // Mark as found since we added it
+        }
     } else {
         // Ollama - models are strings
         models.forEach(modelName => {
@@ -483,6 +522,8 @@ export const ProviderManager = {
         // Get mistral, deepseek and poe settings elements once
         const mistralSettings = DomHelpers.getElement('mistralSettings');
         const deepseekSettings = DomHelpers.getElement('deepseekSettings');
+        const siliconflowSettings = DomHelpers.getElement('siliconflowSettings');
+        const baishanSettings = DomHelpers.getElement('baishanSettings');
         const poeSettings = DomHelpers.getElement('poeSettings');
 
         // Show/hide provider-specific settings (use inline style for elements with inline display:none)
@@ -555,7 +596,33 @@ export const ProviderManager = {
             if (mistralSettings) mistralSettings.style.display = 'none';
             if (deepseekSettings) deepseekSettings.style.display = 'block';
             if (poeSettings) poeSettings.style.display = 'none';
+            if (siliconflowSettings) siliconflowSettings.style.display = 'none';
+            if (baishanSettings) baishanSettings.style.display = 'none';
             if (loadModels) this.loadDeepSeekModels();
+        } else if (provider === 'siliconflow') {
+             DomHelpers.hide('ollamaSettings');
+             if (geminiSettings) geminiSettings.style.display = 'none';
+             if (openaiApiKeyGroup) openaiApiKeyGroup.style.display = 'none';
+             if (openaiEndpointRow) openaiEndpointRow.style.display = 'none';
+             if (openrouterSettings) openrouterSettings.style.display = 'none';
+             if (mistralSettings) mistralSettings.style.display = 'none';
+             if (deepseekSettings) deepseekSettings.style.display = 'none';
+             if (siliconflowSettings) siliconflowSettings.style.display = 'block';
+             if (baishanSettings) baishanSettings.style.display = 'none';
+             if (poeSettings) poeSettings.style.display = 'none';
+             if (loadModels) this.loadSiliconFlowModels();
+        } else if (provider === 'baishan') {
+             DomHelpers.hide('ollamaSettings');
+             if (geminiSettings) geminiSettings.style.display = 'none';
+             if (openaiApiKeyGroup) openaiApiKeyGroup.style.display = 'none';
+             if (openaiEndpointRow) openaiEndpointRow.style.display = 'none';
+             if (openrouterSettings) openrouterSettings.style.display = 'none';
+             if (mistralSettings) mistralSettings.style.display = 'none';
+             if (deepseekSettings) deepseekSettings.style.display = 'none';
+             if (siliconflowSettings) siliconflowSettings.style.display = 'none';
+             if (baishanSettings) baishanSettings.style.display = 'block';
+             if (poeSettings) poeSettings.style.display = 'none';
+             if (loadModels) this.loadBaishanModels();
         }
     },
 
@@ -579,6 +646,10 @@ export const ProviderManager = {
             this.loadMistralModels();
         } else if (provider === 'deepseek') {
             this.loadDeepSeekModels();
+        } else if (provider === 'siliconflow') {
+            this.loadSiliconFlowModels();
+        } else if (provider === 'baishan') {
+            this.loadBaishanModels();
         }
     },
 
@@ -1053,6 +1124,104 @@ export const ProviderManager = {
 
             StateManager.setState('models.availableModels', POE_FALLBACK_MODELS.map(m => m.value));
             StatusManager.setConnected('poe', POE_FALLBACK_MODELS.length);
+        }
+    },
+
+    /**
+     * Load SiliconFlow models dynamically from API
+     */
+    async loadSiliconFlowModels() {
+        const modelSelect = DomHelpers.getElement('model');
+        if (!modelSelect) return;
+
+        modelSelect.innerHTML = '<option value="">Loading SiliconFlow models...</option>';
+        StatusManager.setChecking();
+
+        try {
+            const apiKey = ApiKeyUtils.getValue('siliconflowApiKey');
+            const data = await ApiClient.getModels('siliconflow', { apiKey });
+
+            if (data.models && data.models.length > 0) {
+                MessageLogger.showMessage('', '');
+                // Format models for the dropdown (backend returns id/name)
+                const formattedModels = data.models.map(m => ({
+                    value: m.id,
+                    label: m.name || m.id
+                }));
+
+                const envModelApplied = populateModelSelect(formattedModels, data.default, 'siliconflow');
+                MessageLogger.addLog(`✅ ${data.count} SiliconFlow model(s) loaded`);
+
+                // If .env model was found or manually added, lock it in
+                if (envModelApplied && data.default) {
+                    SettingsManager.markEnvModelApplied();
+                }
+
+                SettingsManager.applyPendingModelSelection();
+                ModelDetector.checkAndShowRecommendation();
+
+                StateManager.setState('models.availableModels', formattedModels.map(m => m.value));
+                StatusManager.setConnected('siliconflow', data.count);
+            } else {
+                MessageLogger.showMessage('⚠️ Using fallback SiliconFlow models.', 'warning');
+                populateModelSelect(SILICONFLOW_FALLBACK_MODELS, null, 'siliconflow');
+                StateManager.setState('models.availableModels', SILICONFLOW_FALLBACK_MODELS.map(m => m.value));
+                StatusManager.setConnected('siliconflow', SILICONFLOW_FALLBACK_MODELS.length);
+            }
+        } catch (error) {
+            MessageLogger.showMessage(`⚠️ Error: ${error.message}. Using fallback.`, 'warning');
+            populateModelSelect(SILICONFLOW_FALLBACK_MODELS, null, 'siliconflow');
+            StateManager.setState('models.availableModels', SILICONFLOW_FALLBACK_MODELS.map(m => m.value));
+            StatusManager.setConnected('siliconflow', SILICONFLOW_FALLBACK_MODELS.length);
+        }
+    },
+
+    /**
+     * Load Baishan models dynamically from API
+     */
+    async loadBaishanModels() {
+        const modelSelect = DomHelpers.getElement('model');
+        if (!modelSelect) return;
+
+        modelSelect.innerHTML = '<option value="">Loading Baishan models...</option>';
+        StatusManager.setChecking();
+
+        try {
+            const apiKey = ApiKeyUtils.getValue('baishanApiKey');
+            const data = await ApiClient.getModels('baishan', { apiKey });
+
+            if (data.models && data.models.length > 0) {
+                MessageLogger.showMessage('', '');
+                // Format models for the dropdown (backend returns id/name)
+                const formattedModels = data.models.map(m => ({
+                    value: m.id,
+                    label: m.name || m.id
+                }));
+
+                const envModelApplied = populateModelSelect(formattedModels, data.default, 'baishan');
+                MessageLogger.addLog(`✅ ${data.count} Baishan Cloud model(s) loaded`);
+
+                // If .env model was found or manually added, lock it in
+                if (envModelApplied && data.default) {
+                    SettingsManager.markEnvModelApplied();
+                }
+
+                SettingsManager.applyPendingModelSelection();
+                ModelDetector.checkAndShowRecommendation();
+
+                StateManager.setState('models.availableModels', formattedModels.map(m => m.value));
+                StatusManager.setConnected('baishan', data.count);
+            } else {
+                MessageLogger.showMessage('⚠️ Using fallback Baishan models.', 'warning');
+                populateModelSelect(BAISHAN_FALLBACK_MODELS, null, 'baishan');
+                StateManager.setState('models.availableModels', BAISHAN_FALLBACK_MODELS.map(m => m.value));
+                StatusManager.setConnected('baishan', BAISHAN_FALLBACK_MODELS.length);
+            }
+        } catch (error) {
+            MessageLogger.showMessage(`⚠️ Error: ${error.message}. Using fallback.`, 'warning');
+            populateModelSelect(BAISHAN_FALLBACK_MODELS, null, 'baishan');
+            StateManager.setState('models.availableModels', BAISHAN_FALLBACK_MODELS.map(m => m.value));
+            StatusManager.setConnected('baishan', BAISHAN_FALLBACK_MODELS.length);
         }
     },
 

@@ -46,6 +46,10 @@ from src.config import (
     DEEPSEEK_MODEL,
     POE_API_KEY,
     POE_MODEL,
+    SILICONFLOW_API_KEY,
+    SILICONFLOW_MODEL,
+    BAISHAN_API_KEY,
+    BAISHAN_MODEL,
     MAX_TOKENS_PER_CHUNK,
     OUTPUT_FILENAME_PATTERN
 )
@@ -119,6 +123,10 @@ def create_config_blueprint(server_session_id=None):
             return _get_deepseek_models(api_key)
         elif provider == 'poe':
             return _get_poe_models(api_key)
+        elif provider == 'siliconflow':
+            return _get_siliconflow_models(api_key)
+        elif provider == 'baishan':
+            return _get_baishan_models(api_key)
         elif provider == 'openai':
             # Get endpoint from request for LM Studio support
             if request.method == 'POST':
@@ -158,12 +166,18 @@ def create_config_blueprint(server_session_id=None):
             "mistral_api_key": mask_api_key(MISTRAL_API_KEY),
             "deepseek_api_key": mask_api_key(DEEPSEEK_API_KEY),
             "poe_api_key": mask_api_key(POE_API_KEY),
+            "siliconflow_api_key": mask_api_key(SILICONFLOW_API_KEY),
+            "baishan_api_key": mask_api_key(BAISHAN_API_KEY),
             "gemini_api_key_configured": bool(GEMINI_API_KEY),
             "openai_api_key_configured": bool(OPENAI_API_KEY),
             "openrouter_api_key_configured": bool(OPENROUTER_API_KEY),
             "mistral_api_key_configured": bool(MISTRAL_API_KEY),
             "deepseek_api_key_configured": bool(DEEPSEEK_API_KEY),
             "poe_api_key_configured": bool(POE_API_KEY),
+            "siliconflow_api_key_configured": bool(SILICONFLOW_API_KEY),
+            "baishan_api_key_configured": bool(BAISHAN_API_KEY),
+            "siliconflow_model": SILICONFLOW_MODEL,
+            "baishan_model": BAISHAN_MODEL,
             "output_filename_pattern": OUTPUT_FILENAME_PATTERN
         }
 
@@ -412,13 +426,17 @@ def create_config_blueprint(server_session_id=None):
                 "error": f"Error connecting to Poe API: {str(e)}"
             })
 
-    def _get_openai_models(provided_api_key=None, api_endpoint=None):
+    def _get_openai_models(provided_api_key=None, api_endpoint=None, default_model=None):
         """Get available models from OpenAI-compatible API
 
         Always tries to fetch models dynamically from any OpenAI-compatible endpoint.
         Falls back to static list if dynamic fetch fails.
         """
         api_key = _resolve_api_key(provided_api_key, 'OPENAI_API_KEY', OPENAI_API_KEY)
+        
+        # Determine fallback default model
+        if not default_model:
+            default_model = 'gpt-4o'
 
         # Determine base URL from endpoint
         if api_endpoint:
@@ -467,12 +485,17 @@ def create_config_blueprint(server_session_id=None):
 
                     if models:
                         model_ids = [m['id'] for m in models]
-                        default_model = model_ids[0] if model_ids else 'gpt-4o'
+                        # Use provided default if it exists in the list
+                        if default_model not in model_ids:
+                            # Try to find a sensible default if the provided one isn't there
+                            final_default = model_ids[0] if model_ids else default_model
+                        else:
+                            final_default = default_model
 
                         return jsonify({
                             "models": models,
                             "model_names": model_ids,
-                            "default": default_model,
+                            "default": final_default,
                             "status": "openai_connected",
                             "count": len(models)
                         })
@@ -492,6 +515,40 @@ def create_config_blueprint(server_session_id=None):
             "status": "openai_static",
             "count": len(openai_static_models)
         })
+
+    def _get_siliconflow_models(provided_api_key=None):
+        """Get available models from SiliconFlow API"""
+        api_key = _resolve_api_key(provided_api_key, 'SILICONFLOW_API_KEY', SILICONFLOW_API_KEY)
+        # Reuse OpenAI models fetching logic with SiliconFlow endpoint
+        from src.config import SILICONFLOW_API_ENDPOINT, SILICONFLOW_MODEL
+        res = _get_openai_models(api_key, SILICONFLOW_API_ENDPOINT, SILICONFLOW_MODEL)
+        # If it returns a static list or error, ensure our default model is included
+        data = res.get_json()
+        if data.get('status') == 'openai_static' or not data.get('models'):
+            from src.config import SILICONFLOW_MODEL
+            data['models'] = [{'id': SILICONFLOW_MODEL, 'name': SILICONFLOW_MODEL}]
+            data['model_names'] = [SILICONFLOW_MODEL]
+            data['default'] = SILICONFLOW_MODEL
+            data['status'] = 'siliconflow_default'
+            data['count'] = 1
+            return jsonify(data)
+        return res
+
+    def _get_baishan_models(provided_api_key=None):
+        """Get available models from Baishan Cloud API"""
+        api_key = _resolve_api_key(provided_api_key, 'BAISHAN_API_KEY', BAISHAN_API_KEY)
+        from src.config import BAISHAN_API_ENDPOINT, BAISHAN_MODEL
+        res = _get_openai_models(api_key, BAISHAN_API_ENDPOINT, BAISHAN_MODEL)
+        data = res.get_json()
+        if data.get('status') == 'openai_static' or not data.get('models'):
+            from src.config import BAISHAN_MODEL
+            data['models'] = [{'id': BAISHAN_MODEL, 'name': BAISHAN_MODEL}]
+            data['model_names'] = [BAISHAN_MODEL]
+            data['default'] = BAISHAN_MODEL
+            data['status'] = 'baishan_default'
+            data['count'] = 1
+            return jsonify(data)
+        return res
 
     def _get_gemini_models(provided_api_key=None):
         """Get available models from Gemini API"""
@@ -777,6 +834,10 @@ def create_config_blueprint(server_session_id=None):
             'DEEPSEEK_MODEL',
             'POE_API_KEY',
             'POE_MODEL',
+            'SILICONFLOW_API_KEY',
+            'SILICONFLOW_MODEL',
+            'BAISHAN_API_KEY',
+            'BAISHAN_MODEL',
             'DEFAULT_MODEL',
             'LLM_PROVIDER',
             'API_ENDPOINT',

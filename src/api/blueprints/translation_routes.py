@@ -48,10 +48,10 @@ def create_translation_blueprint(state_manager, start_translation_job):
         # Validate required fields
         if 'file_path' in data:
             required_fields = ['file_path', 'source_language', 'target_language',
-                             'model', 'llm_api_endpoint', 'output_filename', 'file_type']
+                             'model', 'output_filename', 'file_type']
         else:
             required_fields = ['text', 'source_language', 'target_language',
-                             'model', 'llm_api_endpoint', 'output_filename']
+                             'model', 'output_filename']
 
         for field in required_fields:
             if field not in data or (isinstance(data[field], str) and not data[field].strip()) or (not isinstance(data[field], str) and data[field] is None):
@@ -78,6 +78,11 @@ def create_translation_blueprint(state_manager, start_translation_job):
             'gemini_api_key': _resolve_api_key(data.get('gemini_api_key'), 'GEMINI_API_KEY'),
             'openai_api_key': _resolve_api_key(data.get('openai_api_key'), 'OPENAI_API_KEY'),
             'openrouter_api_key': _resolve_api_key(data.get('openrouter_api_key'), 'OPENROUTER_API_KEY'),
+            'mistral_api_key': _resolve_api_key(data.get('mistral_api_key'), 'MISTRAL_API_KEY'),
+            'deepseek_api_key': _resolve_api_key(data.get('deepseek_api_key'), 'DEEPSEEK_API_KEY'),
+            'poe_api_key': _resolve_api_key(data.get('poe_api_key'), 'POE_API_KEY'),
+            'siliconflow_api_key': _resolve_api_key(data.get('siliconflow_api_key'), 'SILICONFLOW_API_KEY'),
+            'baishan_api_key': _resolve_api_key(data.get('baishan_api_key'), 'BAISHAN_API_KEY'),
             # Prompt options (optional instructions to include in the system prompt)
             'prompt_options': data.get('prompt_options', {}),
             # Bilingual output (original + translation interleaved)

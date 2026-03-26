@@ -18,7 +18,9 @@ async def translate_subtitles(subtitles: List[Dict[str, str]], source_language: 
                             log_callback=None,
                             stats_callback=None, check_interruption_callback=None, custom_instructions="",
                             llm_provider="ollama", gemini_api_key=None, openai_api_key=None,
-                            openrouter_api_key=None,
+                            openrouter_api_key=None, mistral_api_key=None, 
+                            deepseek_api_key=None, poe_api_key=None,
+                            siliconflow_api_key=None, baishan_api_key=None,
                             enable_post_processing=False, post_processing_instructions="",
                             prompt_options=None) -> Dict[int, str]:
     """
@@ -45,7 +47,14 @@ async def translate_subtitles(subtitles: List[Dict[str, str]], source_language: 
         log_callback("srt_translation_start", f"Starting translation of {total_subtitles} subtitles...")
     
     # Create LLM client based on provider or custom endpoint
-    llm_client = create_llm_client(llm_provider, gemini_api_key, api_endpoint, model_name, openai_api_key, openrouter_api_key, log_callback=log_callback)
+    llm_client = create_llm_client(llm_provider, gemini_api_key, api_endpoint, model_name, 
+                                   openai_api_key, openrouter_api_key, 
+                                   mistral_api_key=mistral_api_key, 
+                                   deepseek_api_key=deepseek_api_key, 
+                                   poe_api_key=poe_api_key,
+                                   siliconflow_api_key=siliconflow_api_key,
+                                   baishan_api_key=baishan_api_key,
+                                   log_callback=log_callback)
     
     try:
         iterator = tqdm(enumerate(subtitles), total=total_subtitles, 
@@ -247,7 +256,9 @@ async def translate_subtitles_in_blocks(subtitle_blocks: List[List[Dict[str, str
                                       stats_callback=None, check_interruption_callback=None,
                                       custom_instructions="", llm_provider="ollama",
                                       gemini_api_key=None, openai_api_key=None,
-                                      openrouter_api_key=None,
+                                      openrouter_api_key=None, mistral_api_key=None,
+                                      deepseek_api_key=None, poe_api_key=None,
+                                      siliconflow_api_key=None, baishan_api_key=None,
                                       enable_post_processing=False,
                                       post_processing_instructions="",
                                       checkpoint_manager=None, translation_id=None,
@@ -323,7 +334,14 @@ async def translate_subtitles_in_blocks(subtitle_blocks: List[List[Dict[str, str
                     f"Starting block translation: {total_subtitles} subtitles in {total_blocks} blocks...")
     
     # Create LLM client based on provider or custom endpoint
-    llm_client = create_llm_client(llm_provider, gemini_api_key, api_endpoint, model_name, openai_api_key, openrouter_api_key, log_callback=log_callback)
+    llm_client = create_llm_client(llm_provider, gemini_api_key, api_endpoint, model_name, 
+                                   openai_api_key, openrouter_api_key, 
+                                   mistral_api_key=mistral_api_key, 
+                                   deepseek_api_key=deepseek_api_key, 
+                                   poe_api_key=poe_api_key,
+                                   siliconflow_api_key=siliconflow_api_key,
+                                   baishan_api_key=baishan_api_key,
+                                   log_callback=log_callback)
     
     try:
         for block_idx, block in enumerate(subtitle_blocks):

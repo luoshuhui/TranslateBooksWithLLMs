@@ -1,7 +1,7 @@
 """
 Centralized LLM client for all API communication
 """
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Callable
 
 from src.config import API_ENDPOINT, DEFAULT_MODEL
 from src.core.llm import create_llm_provider, LLMProvider, ContextOverflowError, RepetitionLoopError, LLMResponse
@@ -163,15 +163,17 @@ class LLMClient:
 default_client = LLMClient(provider_type="ollama", api_endpoint=API_ENDPOINT, model=DEFAULT_MODEL)
 
 
-def create_llm_client(llm_provider: str, gemini_api_key: Optional[str],
-                      api_endpoint: str, model_name: str,
+def create_llm_client(llm_provider: str, gemini_api_key: Optional[str] = None,
+                      api_endpoint: Optional[str] = None, model_name: str = DEFAULT_MODEL,
                       openai_api_key: Optional[str] = None,
                       openrouter_api_key: Optional[str] = None,
                       mistral_api_key: Optional[str] = None,
                       deepseek_api_key: Optional[str] = None,
                       poe_api_key: Optional[str] = None,
+                      siliconflow_api_key: Optional[str] = None,
+                      baishan_api_key: Optional[str] = None,
                       context_window: Optional[int] = None,
-                      log_callback: Optional[callable] = None) -> Optional[LLMClient]:
+                      log_callback: Optional[Callable] = None) -> Optional[LLMClient]:
     """
     Factory function to create LLM client based on provider or custom endpoint
 
@@ -208,4 +210,10 @@ def create_llm_client(llm_provider: str, gemini_api_key: Optional[str],
         # Always create a new client for Ollama to ensure proper configuration
         return LLMClient(provider_type="ollama", api_endpoint=api_endpoint, model=model_name,
                          context_window=context_window, log_callback=log_callback)
+    if llm_provider == "siliconflow":
+        return LLMClient(provider_type="siliconflow", model=model_name, api_key=siliconflow_api_key,
+                         api_endpoint=api_endpoint, context_window=context_window, log_callback=log_callback)
+    if llm_provider == "baishan":
+        return LLMClient(provider_type="baishan", model=model_name, api_key=baishan_api_key,
+                         api_endpoint=api_endpoint, context_window=context_window, log_callback=log_callback)
     return None

@@ -47,6 +47,8 @@ async def translate_epub_file(
     mistral_api_key: Optional[str] = None,
     deepseek_api_key: Optional[str] = None,
     poe_api_key: Optional[str] = None,
+    siliconflow_api_key: Optional[str] = None,
+    baishan_api_key: Optional[str] = None,
     context_window: int = 2048,
     auto_adjust_context: bool = True,
     min_chunk_size: int = 5,
@@ -139,6 +141,8 @@ async def translate_epub_file(
         poe_api_key=poe_api_key,
         cli_api_endpoint=cli_api_endpoint,
         initial_context=initial_context,
+        siliconflow_api_key=siliconflow_api_key,
+        baishan_api_key=baishan_api_key,
         log_callback=log_callback
     )
 
@@ -338,14 +342,16 @@ def _parse_epub_manifest(temp_dir: str, log_callback: Optional[Callable] = None)
 def _create_llm_client(
     llm_provider: str,
     model_name: str,
-    gemini_api_key: Optional[str],
-    openai_api_key: Optional[str],
-    openrouter_api_key: Optional[str],
-    mistral_api_key: Optional[str],
-    deepseek_api_key: Optional[str],
-    poe_api_key: Optional[str],
-    cli_api_endpoint: str,
-    initial_context: int,
+    gemini_api_key: Optional[str] = None,
+    openai_api_key: Optional[str] = None,
+    openrouter_api_key: Optional[str] = None,
+    mistral_api_key: Optional[str] = None,
+    deepseek_api_key: Optional[str] = None,
+    poe_api_key: Optional[str] = None,
+    cli_api_endpoint: str = "",
+    initial_context: int = 2048,
+    siliconflow_api_key: Optional[str] = None,
+    baishan_api_key: Optional[str] = None,
     log_callback: Optional[Callable] = None
 ) -> Any:
     """Create LLM client with specified configuration."""
@@ -355,6 +361,8 @@ def _create_llm_client(
         llm_provider, gemini_api_key, cli_api_endpoint, model_name,
         openai_api_key, openrouter_api_key, mistral_api_key, deepseek_api_key,
         poe_api_key=poe_api_key,
+        siliconflow_api_key=siliconflow_api_key,
+        baishan_api_key=baishan_api_key,
         context_window=initial_context,
         log_callback=log_callback
     )

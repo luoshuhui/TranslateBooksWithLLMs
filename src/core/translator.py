@@ -457,9 +457,11 @@ async def generate_translation_request(main_content, context_before, context_aft
 async def translate_chunks(chunks, source_language, target_language, model_name,
                           api_endpoint, log_callback=None,
                           stats_callback=None, check_interruption_callback=None,
-                          llm_provider="ollama", gemini_api_key=None, openai_api_key=None,
-                          openrouter_api_key=None,
-                          context_window=2048, auto_adjust_context=True, min_chunk_size=5,
+                           llm_provider="ollama", gemini_api_key=None, openai_api_key=None,
+                           openrouter_api_key=None, mistral_api_key=None,
+                           deepseek_api_key=None, poe_api_key=None,
+                           siliconflow_api_key=None, baishan_api_key=None,
+                           context_window=2048, auto_adjust_context=True, min_chunk_size=5,
                           checkpoint_manager=None, translation_id=None, resume_from_index=0,
                           prompt_options=None, enable_refinement=False):
     """
@@ -563,6 +565,11 @@ async def translate_chunks(chunks, source_language, target_language, model_name,
 
     llm_client = create_llm_client(llm_provider, gemini_api_key, api_endpoint, model_name,
                                     openai_api_key, openrouter_api_key,
+                                    mistral_api_key=mistral_api_key,
+                                    deepseek_api_key=deepseek_api_key,
+                                    poe_api_key=poe_api_key,
+                                    siliconflow_api_key=siliconflow_api_key,
+                                    baishan_api_key=baishan_api_key,
                                     context_window=initial_context, log_callback=log_callback)
 
     # Create adaptive context manager for Ollama provider

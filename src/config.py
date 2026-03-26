@@ -181,10 +181,20 @@ MIN_CHUNK_SIZE_TOKENS = 50
 """Taille minimale d'un chunk pour éviter la sur-fragmentation"""
 
 # LLM Provider configuration
-LLM_PROVIDER = os.getenv('LLM_PROVIDER', 'ollama')  # 'ollama', 'gemini', 'openai', 'openrouter', 'mistral', 'deepseek', or 'poe'
+LLM_PROVIDER = os.getenv('LLM_PROVIDER', 'siliconflow')  # 'ollama', 'gemini', 'openai', 'openrouter', 'mistral', 'deepseek', 'poe', 'siliconflow', or 'baishan'
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.0-flash')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+
+# SiliconFlow Configuration
+SILICONFLOW_API_KEY = os.getenv("SILICONFLOW_API_KEY")
+SILICONFLOW_API_ENDPOINT = os.getenv("SILICONFLOW_API_ENDPOINT", "https://api.siliconflow.cn/v1/chat/completions")
+SILICONFLOW_MODEL = os.getenv("SILICONFLOW_MODEL", "Qwen/Qwen2.5-7B-Instruct")
+
+# Baishan Cloud Configuration
+BAISHAN_API_KEY = os.getenv("BAISHAN_API_KEY")
+BAISHAN_API_ENDPOINT = os.getenv("BAISHAN_API_ENDPOINT", "https://api.baishancloud.com/v1/chat/completions")
+BAISHAN_MODEL = os.getenv("BAISHAN_MODEL", "DeepSeek-R1-0528-Qwen3-8B")
 
 # OpenRouter configuration (access to 200+ models)
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '')
@@ -270,6 +280,10 @@ if DEBUG_MODE or _debug_mode:
     _config_logger.debug(f"   MISTRAL_MODEL: {MISTRAL_MODEL}")
     _config_logger.debug(f"   DEEPSEEK_API_KEY: {'***' + DEEPSEEK_API_KEY[-4:] if DEEPSEEK_API_KEY else '(not set)'}")
     _config_logger.debug(f"   DEEPSEEK_MODEL: {DEEPSEEK_MODEL}")
+    _config_logger.debug(f"   SILICONFLOW_API_KEY: {'***' + SILICONFLOW_API_KEY[-4:] if SILICONFLOW_API_KEY else '(not set)'}")
+    _config_logger.debug(f"   SILICONFLOW_MODEL: {SILICONFLOW_MODEL}")
+    _config_logger.debug(f"   BAISHAN_API_KEY: {'***' + BAISHAN_API_KEY[-4:] if BAISHAN_API_KEY else '(not set)'}")
+    _config_logger.debug(f"   BAISHAN_MODEL: {BAISHAN_MODEL}")
     _config_logger.debug(f"   POE_API_KEY: {'***' + POE_API_KEY[-4:] if POE_API_KEY else '(not set)'}")
     _config_logger.debug(f"   POE_MODEL: {POE_MODEL}")
     _config_logger.debug("="*60)
@@ -449,6 +463,8 @@ class TranslationConfig:
     mistral_api_key: str = MISTRAL_API_KEY
     deepseek_api_key: str = DEEPSEEK_API_KEY
     poe_api_key: str = POE_API_KEY
+    siliconflow_api_key: str = SILICONFLOW_API_KEY
+    baishan_api_key: str = BAISHAN_API_KEY
 
     # LLM parameters
     timeout: int = REQUEST_TIMEOUT
@@ -487,6 +503,8 @@ class TranslationConfig:
             mistral_api_key=getattr(args, 'mistral_api_key', MISTRAL_API_KEY),
             deepseek_api_key=getattr(args, 'deepseek_api_key', DEEPSEEK_API_KEY),
             poe_api_key=getattr(args, 'poe_api_key', POE_API_KEY),
+            siliconflow_api_key=getattr(args, 'siliconflow_api_key', SILICONFLOW_API_KEY),
+            baishan_api_key=getattr(args, 'baishan_api_key', BAISHAN_API_KEY),
             max_tokens_per_chunk=getattr(args, 'max_tokens_per_chunk', MAX_TOKENS_PER_CHUNK),
             soft_limit_ratio=getattr(args, 'soft_limit_ratio', SOFT_LIMIT_RATIO)
         )
@@ -515,6 +533,8 @@ class TranslationConfig:
             mistral_api_key=request_data.get('mistral_api_key', MISTRAL_API_KEY),
             deepseek_api_key=request_data.get('deepseek_api_key', DEEPSEEK_API_KEY),
             poe_api_key=request_data.get('poe_api_key', POE_API_KEY),
+            siliconflow_api_key=request_data.get('siliconflow_api_key', SILICONFLOW_API_KEY),
+            baishan_api_key=request_data.get('baishan_api_key', BAISHAN_API_KEY),
             max_tokens_per_chunk=request_data.get('max_tokens_per_chunk', MAX_TOKENS_PER_CHUNK),
             soft_limit_ratio=request_data.get('soft_limit_ratio', SOFT_LIMIT_RATIO)
         )
@@ -537,6 +557,8 @@ class TranslationConfig:
             'mistral_api_key': self.mistral_api_key,
             'deepseek_api_key': self.deepseek_api_key,
             'poe_api_key': self.poe_api_key,
+            'siliconflow_api_key': self.siliconflow_api_key,
+            'baishan_api_key': self.baishan_api_key,
             'max_tokens_per_chunk': self.max_tokens_per_chunk,
             'soft_limit_ratio': self.soft_limit_ratio
         }

@@ -446,6 +446,8 @@ export const FormManager = {
             ApiKeyUtils.setupField('mistralApiKey', config.mistral_api_key_configured, config.mistral_api_key);
             ApiKeyUtils.setupField('deepseekApiKey', config.deepseek_api_key_configured, config.deepseek_api_key);
             ApiKeyUtils.setupField('poeApiKey', config.poe_api_key_configured, config.poe_api_key);
+            ApiKeyUtils.setupField('siliconflowApiKey', config.siliconflow_api_key_configured, config.siliconflow_api_key);
+            ApiKeyUtils.setupField('baishanApiKey', config.baishan_api_key_configured, config.baishan_api_key);
 
             // After loading defaults, dispatch event to notify other modules
             console.log('[FormManager] Default config loaded, dispatching event');
@@ -653,10 +655,10 @@ export const FormManager = {
         const model = DomHelpers.getValue('model');
 
         // Get API endpoint based on provider
-        let apiEndpoint;
+        let apiEndpoint = '';
         if (provider === 'openai') {
             apiEndpoint = DomHelpers.getValue('openaiEndpoint');
-        } else {
+        } else if (provider === 'ollama') {
             apiEndpoint = DomHelpers.getValue('apiEndpoint');
         }
 
@@ -664,6 +666,8 @@ export const FormManager = {
         const geminiApiKey = provider === 'gemini' ? ApiKeyUtils.getValue('geminiApiKey') : '';
         const openaiApiKey = provider === 'openai' ? ApiKeyUtils.getValue('openaiApiKey') : '';
         const openrouterApiKey = provider === 'openrouter' ? ApiKeyUtils.getValue('openrouterApiKey') : '';
+        const siliconflowApiKey = provider === 'siliconflow' ? ApiKeyUtils.getValue('siliconflowApiKey') : '';
+        const baishanApiKey = provider === 'baishan' ? ApiKeyUtils.getValue('baishanApiKey') : '';
 
         // Get TTS configuration
         const ttsEnabled = DomHelpers.getElement('ttsEnabled')?.checked || false;
@@ -677,6 +681,8 @@ export const FormManager = {
             gemini_api_key: geminiApiKey,
             openai_api_key: openaiApiKey,
             openrouter_api_key: openrouterApiKey,
+            siliconflow_api_key: siliconflowApiKey,
+            baishan_api_key: baishanApiKey,
             // Prompt options (optional system prompt instructions)
             // Technical content protection is always enabled
             prompt_options: {

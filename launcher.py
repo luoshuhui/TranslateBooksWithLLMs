@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Launcher wrapper for PyInstaller executable
 Handles proper working directory setup and .env file management

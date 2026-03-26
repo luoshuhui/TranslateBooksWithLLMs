@@ -50,19 +50,26 @@ function getTranslationConfig(file) {
     // Get TTS configuration
     const ttsEnabled = DomHelpers.getElement('ttsEnabled')?.checked || false;
 
+    let apiEndpoint = '';
+    if (provider === 'openai') {
+        apiEndpoint = DomHelpers.getValue('openaiEndpoint');
+    } else if (provider === 'ollama') {
+        apiEndpoint = DomHelpers.getValue('apiEndpoint');
+    }
+
     const config = {
         source_language: sourceLanguageVal,
         target_language: targetLanguageVal,
         model: DomHelpers.getValue('model'),
-        llm_api_endpoint: provider === 'openai' ?
-                         DomHelpers.getValue('openaiEndpoint') :
-                         DomHelpers.getValue('apiEndpoint'),
+        llm_api_endpoint: apiEndpoint,
         llm_provider: provider,
         gemini_api_key: provider === 'gemini' ? ApiKeyUtils.getValue('geminiApiKey') : '',
         openai_api_key: provider === 'openai' ? ApiKeyUtils.getValue('openaiApiKey') : '',
         openrouter_api_key: provider === 'openrouter' ? ApiKeyUtils.getValue('openrouterApiKey') : '',
         mistral_api_key: provider === 'mistral' ? ApiKeyUtils.getValue('mistralApiKey') : '',
         deepseek_api_key: provider === 'deepseek' ? ApiKeyUtils.getValue('deepseekApiKey') : '',
+        siliconflow_api_key: provider === 'siliconflow' ? ApiKeyUtils.getValue('siliconflowApiKey') : '',
+        baishan_api_key: provider === 'baishan' ? ApiKeyUtils.getValue('baishanApiKey') : '',
         poe_api_key: provider === 'poe' ? ApiKeyUtils.getValue('poeApiKey') : '',
         input_filename: file.name,
         output_filename: file.outputFilename,

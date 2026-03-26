@@ -94,17 +94,13 @@ class OpenAICompatibleProvider(LLMProvider):
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
+        # Simplified payload to ensure maximum compatibility with cloud providers
+        # Local servers (like llama.cpp) will use defaults for non-provided params
         payload = {
             "model": self.model,
             "messages": messages,
             "stream": False,
         }
-
-        # Only add thinking-disable params for local/compatible servers, not official OpenAI API
-        if not self._is_official_openai_endpoint():
-            payload["thinking"] = False
-            payload["enable_thinking"] = False
-            payload["chat_template_kwargs"] = {"enable_thinking": False}
 
         client = await self._get_client()
         for attempt in range(MAX_TRANSLATION_ATTEMPTS):

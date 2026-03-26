@@ -13,7 +13,9 @@ from src.config import (
     OPENROUTER_API_KEY, OPENROUTER_MODEL,
     MISTRAL_API_KEY, MISTRAL_MODEL, MISTRAL_API_ENDPOINT,
     DEEPSEEK_API_KEY, DEEPSEEK_MODEL, DEEPSEEK_API_ENDPOINT,
-    POE_API_KEY, POE_MODEL, POE_API_ENDPOINT
+    POE_API_KEY, POE_MODEL, POE_API_ENDPOINT,
+    SILICONFLOW_API_KEY, SILICONFLOW_MODEL, SILICONFLOW_API_ENDPOINT,
+    BAISHAN_API_KEY, BAISHAN_MODEL, BAISHAN_API_ENDPOINT
 )
 from .base import LLMProvider
 from .providers.ollama import OllamaProvider
@@ -138,6 +140,28 @@ def create_llm_provider(provider_type: str = "ollama", **kwargs) -> LLMProvider:
             api_key=api_key,
             model=kwargs.get("model", POE_MODEL),
             api_endpoint=POE_API_ENDPOINT
+        )
+    elif provider_type.lower() == "siliconflow":
+        api_key = kwargs.get("api_key") or kwargs.get("siliconflow_api_key")
+        if not api_key:
+            api_key = os.getenv("SILICONFLOW_API_KEY", SILICONFLOW_API_KEY)
+        return OpenAICompatibleProvider(
+            api_endpoint=kwargs.get("api_endpoint") or SILICONFLOW_API_ENDPOINT,
+            model=kwargs.get("model", SILICONFLOW_MODEL),
+            api_key=api_key,
+            context_window=kwargs.get("context_window") or 80000, # Default for SiliconFlow
+            log_callback=kwargs.get("log_callback")
+        )
+    elif provider_type.lower() == "baishan":
+        api_key = kwargs.get("api_key") or kwargs.get("baishan_api_key")
+        if not api_key:
+            api_key = os.getenv("BAISHAN_API_KEY", BAISHAN_API_KEY)
+        return OpenAICompatibleProvider(
+            api_endpoint=kwargs.get("api_endpoint") or BAISHAN_API_ENDPOINT,
+            model=kwargs.get("model", BAISHAN_MODEL),
+            api_key=api_key,
+            context_window=kwargs.get("context_window") or 128000, # Default for Baishan
+            log_callback=kwargs.get("log_callback")
         )
     else:
         raise ValueError(f"Unknown provider type: {provider_type}")

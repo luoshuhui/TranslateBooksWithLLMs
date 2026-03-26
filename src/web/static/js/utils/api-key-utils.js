@@ -16,7 +16,9 @@ const STATUS_ID_MAP = {
     'openrouterApiKey': 'openrouterKeyStatus',
     'mistralApiKey': 'mistralKeyStatus',
     'deepseekApiKey': 'deepseekKeyStatus',
-    'poeApiKey': 'poeKeyStatus'
+    'poeApiKey': 'poeKeyStatus',
+    'siliconflowApiKey': 'siliconflowKeyStatus',
+    'baishanApiKey': 'baishanKeyStatus'
 };
 
 /**
@@ -28,7 +30,9 @@ const PROVIDER_FIELD_MAP = {
     'openrouter': 'openrouterApiKey',
     'mistral': 'mistralApiKey',
     'deepseek': 'deepseekApiKey',
-    'poe': 'poeApiKey'
+    'poe': 'poeApiKey',
+    'siliconflow': 'siliconflowApiKey',
+    'baishan': 'baishanApiKey'
 };
 
 export const ApiKeyUtils = {
@@ -194,6 +198,14 @@ export const ApiKeyUtils = {
 
         if (provider === 'poe' && !isAvailable) {
             return { valid: false, message: 'Poe API key is required. Get your key at poe.com/api_key' };
+        }
+
+        if (provider === 'siliconflow' && !isAvailable) {
+            return { valid: false, message: 'SiliconFlow API key is required when using SiliconFlow provider.' };
+        }
+
+        if (provider === 'baishan' && !isAvailable) {
+            return { valid: false, message: 'Baishan Cloud API key is required when using Baishan Cloud provider.' };
         }
 
         return { valid: true, message: '' };

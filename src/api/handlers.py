@@ -275,6 +275,8 @@ async def perform_actual_translation(translation_id, config, state_manager, outp
             mistral_api_key=config.get('mistral_api_key', ''),
             deepseek_api_key=config.get('deepseek_api_key', ''),
             poe_api_key=config.get('poe_api_key', ''),
+            siliconflow_api_key=config.get('siliconflow_api_key', ''),
+            baishan_api_key=config.get('baishan_api_key', ''),
             context_window=config.get('context_window', 2048),
             auto_adjust_context=config.get('auto_adjust_context', True),
             min_chunk_size=config.get('min_chunk_size', 5),
